@@ -1,0 +1,14 @@
+
+
+<launch>
+
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+		<param name="port" value="9090"/>
+	</include>
+
+	<node name="file_server" pkg="file_server" type="file_server" output="screen"/>
+
+	<node name="move_swarm" pkg="VR_exp_ROS" type="movetoPos.py" output="screen"/>
+
+	
+</launch>

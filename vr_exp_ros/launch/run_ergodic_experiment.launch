@@ -1,0 +1,57 @@
+<launch>
+
+	<!-- Set Control Type and Params -->
+	<arg name="control"/>
+	<arg name="id"/>
+	<arg name="complexity"/>
+
+	<param name="control_type" type="str" value="$(arg control)"/>
+	<param name="complexity_level" type="str" value="$(arg complexity)"/>
+
+	<!--Set up Rosbag Record -->
+	<arg name="bag_name" value="$(find vr_exp_ros)/data/sub$(arg id)/$(arg id)_$(arg control)ergodic_$(arg complexity).bag"/>
+	<node pkg="rosbag" name="record" type="record" args="-a -O $(arg bag_name)" />
+
+	<!-- Set Up Websocket -->
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+        <arg name="address" value="192.168.1.2"/>
+        <arg name="port" value="9090"/>
+	</include>
+	<node name="file_server" pkg="file_server" type="file_server" output="screen"/>
+
+
+	<!--Set Up distribution based on Control Type -->
+	<group if="$(eval arg('control') == 'direct')">
+				<!-- Tanvas TCP Communication Connection -->
+				<node name="tanvas_communication" pkg="user_input" type="client"/>
+	</group>
+
+	<!--Set Up distribution based on Control Type -->
+	<group if="$(eval arg('control') == 'shared')">
+				 <!-- Tanvas TCP Communication Connection -->
+				 <node name="tanvas_communication" pkg="user_input" type="client"/>
+				 <!-- Autonomous distribution -->
+				 <node name="visual_dist" pkg="dist_autonomy" type="visual_occlusion" />
+			 	 <node name="obj_dist" pkg="dist_autonomy" type="obj_detect_dist.py" />
+
+	</group>
+
+	<group if="$(eval arg('control') == 'auto')">
+				 <!-- Autonomous distribution -->
+				 <node name="visual_dist" pkg="dist_autonomy" type="visual_occlusion" output="screen"/>
+			 	 <node name="obj_dist" pkg="dist_autonomy" type="obj_detect_dist.py"  output="screen"/>
+	</group>
+
+	<!-- For rviz -->
+	<!-- <node name="rviz_show" pkg="dist_autonomy" type="pub_grid.py" output="screen"/> -->
+
+	<!-- Start main file of subscribers/publishers -->
+	<node name="main" pkg="vr_exp_ros" type="main.py" output="screen"/>
+
+	<!-- Ergodic Swarm Control -->
+	<node name="swarm" pkg="rt_ergodic_control" type="create_swarm.py">
+	</node>
+
+	<!-- Swarm Position To Unity Publisher -->
+	<node name="swarm_listener" pkg="vr_exp_ros" type="swarm_listener.py" />
+</launch>

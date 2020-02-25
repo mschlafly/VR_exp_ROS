@@ -1,0 +1,39 @@
+<launch>
+
+	<!-- Set Control Type and Params -->
+	<!--
+	<arg name="control" default="direct" />
+	<param name="control_type" type="str" value=$(arg control) />
+
+	<arg name="num_agents" default="3">
+	<param name="num_agents" type="int" value=$(arg num_agents) />
+	--> 
+	<!-- Set Up Websocket --> 
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+        <arg name="address" value="192.168.1.2"/>
+        <arg name="port" value="9090"/>
+	</include>
+	<node name="file_server" pkg="file_server" type="file_server" output="screen"/>
+
+	<!-- Tanvas TCP Communication Connection -->
+	<!--node name="tanvas_communication" pkg="user_input" type="client" --> 
+
+	<!-- Tanvas Subscriber Visualizer -->
+	<!--node name="tanvas_viz" pkg="vr_exp_ros" type="tanvas_distr_sub.py" -->	
+
+	<!-- Start main file of subscribers/publishers: Tanvas distr subscriber, VR distr subscriber, and Target Distr publisher -->
+	<node name="main" pkg="vr_exp_ros" type="main.py" />
+
+	<!-- Ergodic Swarm Control -->
+	<node name="swarm" pkg="rt_ergodic_control" type="create_swarm.py">
+	</node>
+	
+	<!-- Swarm Position To Unity Publisher -->
+	<node name="swarm_listener" pkg="vr_exp_ros" type="swarm_listener.py" />
+ <!--
+	<node pkg="rosbag" name="record" type="record" args="-O $(arg filename) /swarm_pos /input /vr_dist /target_distribution /tf /rosout">
+	<arg name="filename" default="0_subject_vr_exp.bag" doc="Output filename of rosbag. Must end in .bag" />
+	
+	</node>
+	-->
+</launch>

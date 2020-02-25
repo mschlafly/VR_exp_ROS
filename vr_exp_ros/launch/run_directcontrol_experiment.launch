@@ -1,0 +1,25 @@
+<launch>
+	<!-- Set Control Type and Params -->
+	<arg name="control" value="waypoint"/>
+	<arg name="id"/>
+	<arg name="complexity"/>
+	<param name="control_type" type="str" value="$(arg control)"/>
+
+	<!--Set up Rosbag Record -->
+	<arg name="bag_name" value="$(find vr_exp_ros)/data/sub$(arg id)/$(arg id)_$(arg control)_$(arg complexity).bag"/>
+	<node pkg="rosbag" name="record" type="record" args="-a -O $(arg bag_name)" />
+
+	<!-- Set Up Websocket -->
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+        <arg name="address" value="192.168.1.2"/>
+        <arg name="port" value="9090"/>
+	</include>
+	<node name="file_server" pkg="file_server" type="file_server" output="screen"/>
+
+	<!-- Tanvas TCP Communication Connection -->
+	<node name="tanvas_communication" pkg="user_input" type="client" />
+
+	<!-- Swarm Position To Unity Direct Controller and Publisher -->
+	<node name="swarm_direct_control" pkg="vr_exp_ros" type="direct_control_swarm.py" output="screen" />
+
+</launch>
