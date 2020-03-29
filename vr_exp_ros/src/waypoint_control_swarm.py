@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# This function has the publishes the swarm poses so that each drone
+# follows the list of coordinates that were published to the /input topic
+# in a loop
+
 ##########################
 ##### Python Imports #####
 ##########################
@@ -23,9 +27,10 @@ from user_input.msg import input_array
 
 eps = .5 # distance for status reached
 class Swarm_DirectControl():
+# Swarm Waypoint Controller. Initializes the controller and receives trajectories from the Tanvas tablet with the associated drone number and executes that trajectory on a loop
 
     def __init__(self):
-        rospy.init_node('swarm_direct_controller')
+        rospy.init_node('swarm_waypoint_controller')
         if rospy.has_param('/num_agents'):
             self.num_drones = rospy.get_param('/num_agents')#3
         else:
@@ -48,6 +53,7 @@ class Swarm_DirectControl():
         self.rate = rospy.Rate(30)
 
     def input_location_listener(self, data):
+        # Takes in trajectory with agent number from tanvas and updates the desired trajectory for the corresponding agent
         if data.datalen != 0:
             agent_num = data.droneID
             print("Updated desired path for agent {}".format(agent_num))
@@ -57,6 +63,7 @@ class Swarm_DirectControl():
             # print("Updated des path: ", len(self.desired_path[agent_num][0]),  self.desired_loc[agent_num], [self.desired_path[agent_num][0][0],self.desired_path[agent_num][1][0]])
 
     def control(self, current_loc, desired_loc):
+        # simple position-control loop
         dist = desired_loc-current_loc
         if np.linalg.norm(dist) < eps: #if curr_loc == desired_loc
             return current_loc
@@ -73,6 +80,7 @@ class Swarm_DirectControl():
             return new_pos
 
     def generate_traj(self):
+        # Generates the resulting positions for each drone from controller
         for i in range(self.num_drones):
             if self.desired_loc[i] is not None:
                 if np.linalg.norm(self.desired_loc[i]-self.swarm_loc[i]) < eps: #Check if current location is close enough to desired. If so, if desired_path is trajectory, move to next point or restart (if at end of traj). Else, just stay there.
@@ -109,6 +117,7 @@ class Swarm_DirectControl():
         self.swarm_pub.publish(self.swarmpose_msg)
 
     def swarm_update(self):
+        # Generates trajectory/new drones positions once one of the drones receives a goal path
         if np.any(np.array(self.desired_path)!=None):
             self.generate_traj()
         self.update_swarm_pos()

@@ -13,6 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   rt_ergodic_control
+  dist_autonomy
+  user_input
+  #file_server
 )
 
 
@@ -50,13 +53,13 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   ExampleMessage.msg
-   VR_dist.msg
-   Target_dist.msg
+# add_message_files(
+#   FILES
+   #ExampleMessage.msg
+   #VR_dist.msg
+   #Target_dist.msg
 
-)
+#)
 
 ## Generate services in the 'srv' folder
 # add_service_files(

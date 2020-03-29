@@ -1,13 +1,19 @@
 <launch>
+	<!--launches the waypoint swarm controller, Tanvas client, sets up websocket,
+	and saves all topics to a bag file (the bag file section has been commented out).
+	It takes 2 arguments for the id, complexity (referring the the environmental
+	complexity, either 'high' or 'low'). -->
+
 	<!-- Set Control Type and Params -->
 	<arg name="control" value="waypoint"/>
 	<arg name="id"/>
 	<arg name="complexity"/>
 	<param name="control_type" type="str" value="$(arg control)"/>
 
-	<!--Set up Rosbag Record -->
-	<arg name="bag_name" value="$(find vr_exp_ros)/data/sub$(arg id)/$(arg id)_$(arg control)_$(arg complexity).bag"/>
+	<!--Set up Rosbag Record
+	<arg name="bag_name" value="$(find vr_exp_ros)/data/$(arg id)_$(arg control)_$(arg complexity).bag"/>
 	<node pkg="rosbag" name="record" type="record" args="-a -O $(arg bag_name)" />
+	-->
 
 	<!-- Set Up Websocket -->
 	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
@@ -20,6 +26,6 @@
 	<node name="tanvas_communication" pkg="user_input" type="client" />
 
 	<!-- Swarm Position To Unity Direct Controller and Publisher -->
-	<node name="swarm_direct_control" pkg="vr_exp_ros" type="direct_control_swarm.py" output="screen" />
+	<node name="swarm_waypoint_controller" pkg="vr_exp_ros" type="waypoint_control_swarm.py" output="screen" />
 
 </launch>

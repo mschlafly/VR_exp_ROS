@@ -65,6 +65,7 @@ char location_chararray[MAXLEN];
 char input_mode;
 int gridsize_unity = 30;
 
+// Callback function for the person_position subscriber
 void chatterCallback(const user_input::person_position::ConstPtr& msg)
 {
   // printf("Updating the person's position\n");
@@ -254,15 +255,11 @@ int main(int argc , char *argv[])
           } else if (coordinate == 'x') {
             temp_x = temp_number;
             coordinate = 'y';
-            //printf("coordinate x found %f \n", temp_x);
           } else if (coordinate == 'y') {
             temp_y = temp_number;
             coordinate = 'x';
-            //printf("coordinate y found %f \n", temp_y);
-
             int unity_x=temp_x, unity_y=temp_y;
             float temp_x2, temp_y2;
-    //         // printf("input_mode: %s",input_mode)
             // Perform the rest of the coordinate transform depending on input_mode
             if (input_mode=='l') {
 
@@ -329,10 +326,8 @@ int main(int argc , char *argv[])
 			puts("Send failed");
 			return 1;
 		}
-		//puts("Replyed!");
     ros::spinOnce();
     rate.sleep();
-    //sleep(1);
 	} // Continue looping until ctrl c is pressed
 	return 0;
 }

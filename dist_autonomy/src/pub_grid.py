@@ -10,8 +10,8 @@ from vr_exp_ros.msg import Target_dist
 class pub_dist:
 
     '''
-    Subscribes to the VR dist topic and constantly plots the distribution for the
-    ergodic controller
+    pub_grid.py subscribes to the /target_distribution and publishes the
+    distribution in a GridMap format for visualization in rviz.
     '''
 
     def __init__(self):

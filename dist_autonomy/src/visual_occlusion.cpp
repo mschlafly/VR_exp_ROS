@@ -1,6 +1,10 @@
-
-// This ros node recieved strings with coordinate through a TCP socket and
-// publishes them to ros topic /input using custom message user_input/input_array
+//To create the visual occlusion distribution, visual_occlusion.cpp subscribes
+// to the player's current position (topic /person_position of type
+// person_position.msg in the user_input package). Within visual_occlusion.cpp,
+// the assumed sight capabilities of the player are defined (can see 45 degrees
+// in each direction and 10 unity units in front) and the locations of the
+// buildings are hard-coded. The code references a ROS parameter to find out 
+// whether the 'low' or 'high' complexity environment is being used.
 
 // For compiling not in ros
 //$ gcc client.c -o client
@@ -82,13 +86,9 @@ int main(int argc , char *argv[])
     // Get rosparam for whether this is a high or low complexity trial
     string env;
     n.getParam("/complexity_level",env);
-    // ROS_INFO_STREAM(env << "\n");
-
     fill_building_array(env);
-    // printf("finished \n");
+
     // Continuously loops - quits when ctl-C is clicked
-    // int count = 0;
-    //printf("count %d \n", count);
     while (ros::ok()) {
       if (start_publishing==false) {
         printf("person_position has not been published\n");
@@ -102,53 +102,37 @@ int main(int argc , char *argv[])
         {
             for (int z = 0; z < arraysize; z++)
             {
-                //send_array.arr.push_back(building_array[x][z]);
-                // printf("bld value %d \n",building_array[x][z]);
-
                 // Compute the vector from the person to the grid point x=(Xg-Xp) and z=(Zg-Zp)
                 float v2grid_x = (x+0.5)-person_x;
                 float v2grid_z = (z+0.5)-person_z;
                 float dist = sqrt(pow(v2grid_x,2)+pow(v2grid_z,2)); // units
 
                 // Check if the grid point is in the player's sight (true)
-                // printf("checking sight. \n");
                 checksight = isgridpointinsight(x,z,person_x,person_z);
-                // send_array.target_array.push_back(building_array[x][z]);
                 if (checksight==true) {
-                    // visual_field_dist[x][z] = 0;
                     send_array.target_array.push_back(0);
                 } else {
                     int weight = round(slope*dist+y0);
-                    //printf("slope: %f mag: %f weight: %d \n",slope,dist,weight);
                     if (weight < minweight) {
                         weight = minweight;
                     } else if (weight > maxweight) {
                         weight = maxweight;
                     }
-                    //count++;
-                    //printf("count %d \n", count);
-                    // visual_field_dist[x][z] = weight;
                     send_array.target_array.push_back(weight);
                 }
             }
         }
 
         // Publish array
-
-        //send_array.arr = visual_field_dist;
         pub.publish(send_array);
-        // printf("Published\n", );
         ros::spinOnce();
         rate.sleep();
-
-        //count++;
-        //printf("count %d \n", count);
       }
     }
 	  return 0;
 }
 
-//
+// Detemines if the person can see the middle of grid square (x,x)
 bool isgridpointinsight(int x, int z, float p_x, float p_z) {
 
     // Both of these need to be true for the the person to be in sight
@@ -168,10 +152,7 @@ bool isgridpointinsight(int x, int z, float p_x, float p_z) {
     float v2grid_z_normalized = v2grid_z/mag;
     float v2vision_x = cos(-(person_th-(M_PI/2))); // It is already normalized
     float v2vision_z = sin(-(person_th-(M_PI/2)));
-
-    // printf("x-%d z-%d v2vision_x-%f z-%f v2grid_x_normalized-%f z-%f\n", x, z, v2vision_x, v2vision_z, v2grid_x_normalized, v2grid_z_normalized);
     float dotproduct = v2vision_x*v2grid_x_normalized + v2vision_z*v2grid_z_normalized;
-    // printf("dotproduct: %f \n", dotproduct);
     if (dotproduct>(cos(M_PI/4))) // Can see 45 degrees right and left
     {
         is_facing_point = true;
@@ -189,9 +170,7 @@ bool isgridpointinsight(int x, int z, float p_x, float p_z) {
         float prev_position_x = p_x;
         float prev_position_z = p_z;
         float new_position_x, new_position_z;
-        // printf("v2grid_x_step \n", );
 
-      // if (x==29) {
         int i = 0;
         // Check the length of the vector for buildings; stop if found
         while ((is_path_on_building == false) && (i <= num_tests)) {
@@ -202,12 +181,10 @@ bool isgridpointinsight(int x, int z, float p_x, float p_z) {
             if ((floor(new_position_x)==floor(prev_position_x)) && (floor(new_position_z)==floor(prev_position_z))) {
             }
             else {
-                // printf("floor of val %f is %d \n", new_position_x, (int)floor(new_position_x));
                 int bld_x = (int)floor(new_position_x);
                 int bld_z = (int)floor(new_position_z);
                 if (building_array[bld_x][bld_z]==1) {
                     is_path_on_building = true;
-                    // printf("path on building \n");
                 }
             }
             prev_position_x = new_position_x;
@@ -215,11 +192,11 @@ bool isgridpointinsight(int x, int z, float p_x, float p_z) {
             i++;
         }
         }
-      // }
     }
     bool iswithinsight = (is_facing_point && is_within_line_of_sight && (is_path_on_building == false));
     return (iswithinsight);
 }
+
 // Creates a building array containing 0 where building are located and 1 where they aren't
 // To be called once at the beginning
 void fill_building_array(string complexity)

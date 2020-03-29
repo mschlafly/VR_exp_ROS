@@ -1,4 +1,11 @@
 <launch>
+	<!-- launches the ergodic swarm controller, Tanvas client (if control is either
+	 direct or shared and can incorporate a user input), dist_autonomy scripts for
+	  creating the autonomous distribution (if the control is either shared or auto),
+		 sets up websocket, and saves all topics to a bag file (the bag file section
+		  has been commented out). It takes 3 arguments for the id, complexity
+			 (referring the the environmental complexity, either 'high' or 'low'),
+			 and control (either direct, shared, or auto).-->
 
 	<!-- Set Control Type and Params -->
 	<arg name="control"/>
@@ -8,9 +15,10 @@
 	<param name="control_type" type="str" value="$(arg control)"/>
 	<param name="complexity_level" type="str" value="$(arg complexity)"/>
 
-	<!--Set up Rosbag Record -->
-	<arg name="bag_name" value="$(find vr_exp_ros)/data/sub$(arg id)/$(arg id)_$(arg control)ergodic_$(arg complexity).bag"/>
+	<!--Set up Rosbag Record
+	<arg name="bag_name" value="$(find vr_exp_ros)/data/$(arg id)_$(arg control)ergodic_$(arg complexity).bag"/>
 	<node pkg="rosbag" name="record" type="record" args="-a -O $(arg bag_name)" />
+	-->
 
 	<!-- Set Up Websocket -->
 	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
@@ -20,13 +28,13 @@
 	<node name="file_server" pkg="file_server" type="file_server" output="screen"/>
 
 
-	<!--Set Up distribution based on Control Type -->
+	<!--Launch nodes based on direct control type -->
 	<group if="$(eval arg('control') == 'direct')">
 				<!-- Tanvas TCP Communication Connection -->
-				<node name="tanvas_communication" pkg="user_input" type="client"/>
+				<node name="tanvas_communication" pkg="user_input" type="client" output="screen"/>
 	</group>
 
-	<!--Set Up distribution based on Control Type -->
+	<!--Launch nodes based on shared control type -->
 	<group if="$(eval arg('control') == 'shared')">
 				 <!-- Tanvas TCP Communication Connection -->
 				 <node name="tanvas_communication" pkg="user_input" type="client"/>
@@ -36,6 +44,7 @@
 
 	</group>
 
+<!--Launch nodes based on auto control type -->
 	<group if="$(eval arg('control') == 'auto')">
 				 <!-- Autonomous distribution -->
 				 <node name="visual_dist" pkg="dist_autonomy" type="visual_occlusion" output="screen"/>

@@ -12,7 +12,7 @@ import rospy
 import tf
 
 from rt_ergodic_control.msg import Ck_msg
-from vr_exp_ros.msg import Target_dist
+from dist_autonomy.msg import Target_dist
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 

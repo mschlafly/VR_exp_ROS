@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Listens to output of decentralized swarm ergodic controller and
+# transforms drone positions to the appropriate workspace coordinates
+# and publishes to Unity
+
 ##########################
 ##### Python Imports #####
 ##########################
@@ -20,7 +24,7 @@ from visualization_msgs.msg import MarkerArray, Marker
 
 
 class Swarm_Listener():
-
+# Listens to output of decentralized swarm ergodic controller and transforms drone positions to the appropriate workspace coordinates and publishes to Unity
     def __init__(self):
 
         rospy.init_node('swarm_listener')
@@ -41,6 +45,7 @@ class Swarm_Listener():
 
 
     def listen(self):
+        # Listens to agent tf locations output from ergodic controller and updates swarm positions
         while not rospy.is_shutdown():
             try:
                 for i in range(self.num_drones):
@@ -55,7 +60,7 @@ class Swarm_Listener():
             self.rate.sleep()
 
     def update_swarm_pos(self, xpos, ypos):
-        
+        # Publishes Swarm positions to Unity
         #### Update PoseArray msg
         self.swarmpose_msg = PoseArray()
         for i in range(self.num_drones):
@@ -75,7 +80,7 @@ class Swarm_Listener():
         self.swarmpose_msg.header.stamp = rospy.Time.now()
         # Publish Message
         self.swarm_pub.publish(self.swarmpose_msg)
-        
+
 if __name__ == '__main__':
     sl = Swarm_Listener()
 
@@ -83,4 +88,3 @@ if __name__ == '__main__':
         sl.listen()
     except rospy.ROSInterruptException:
         pass
-        
